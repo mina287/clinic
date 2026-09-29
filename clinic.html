@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinic Booking System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f6;--card:#fff;--ink:#1c2433;--mut:#66748a;--line:#e3e8ef;--nav:#0d2a52;--pri:#0d2a52;--teal:#12a5b4;--red:#e0405a;--gold:#f7c63d}
+@media(prefers-color-scheme:dark){:root{--bg:#0f151d;--card:#182230;--ink:#e8edf5;--mut:#94a3b8;--line:#2a3648}}
+*{box-sizing:border-box;margin:0}
+body{font-family:"DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.top{background:var(--nav);color:#fff;height:60px;display:flex;align-items:center;padding:0 20px;position:sticky;top:0;z-index:5;font-weight:700;font-size:1.2rem;gap:10px}
+.top i{background:var(--teal);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-style:normal}
+.layout{display:flex;min-height:calc(100vh - 60px)}
+.side{width:220px;background:var(--card);border-inline-end:1px solid var(--line);flex-shrink:0;padding-top:10px}
+.side a{display:block;padding:12px 20px;cursor:pointer;color:var(--ink)}
+.side a.on{background:var(--pri);color:#fff}
+.new{background:var(--gold);color:#4a3a00;font-size:.7rem;padding:1px 7px;border-radius:5px;margin-inline-start:6px}
+main{flex:1;padding:18px;min-width:0}
+.panel{background:var(--card);border-radius:10px;padding:24px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+h1{font-size:1.7rem}
+.s{color:var(--mut);margin:4px 0 16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:6px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:14px}.stat b{display:block;font-size:1.6rem}.stat span{color:var(--mut);font-size:.9rem}
+.form{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+input,select,button{font:inherit;padding:9px 12px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.btn{border:0;color:#fff;background:var(--pri);cursor:pointer}.btn.teal{background:var(--teal);padding:7px 14px}.btn.red{background:var(--red);padding:7px 14px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.wrapx{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{padding:11px;text-align:left;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:400}
+.st{padding:2px 12px;border-radius:12px;font-size:.82rem}.ok{background:#d5f3e4;color:#0b6a44}.wait{background:#fdecc8;color:#7a5200}.no{background:#f9dbe0;color:#9a2439}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.mini{border:1px solid var(--line);border-radius:8px;padding:16px}
+.mini .h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.n{font-size:1.4rem;font-weight:700;margin:10px 0}
+.tg{width:44px;height:24px;border-radius:14px;background:#b8c0cc;border:0;position:relative;cursor:pointer;padding:0}
+.tg::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+.tg.on{background:var(--teal)}.tg.on::after{inset-inline-start:23px}
+.acts{display:flex;justify-content:space-between;gap:6px}
+.empty{color:var(--mut);padding:18px 0}
+.tab{display:none}.tab.show{display:block}
+@media(max-width:760px){.layout{flex-direction:column}.side{width:100%;display:flex;overflow-x:auto;padding:0}.side a{white-space:nowrap}}
+</style>
+</head>
+<body>
+<div class="top"><i>✚</i> Clinic Booking</div>
+<div class="layout">
+<nav class="side">
+<a class="on" onclick="go('home',this)">Dashboard</a>
+<a onclick="go('appts',this)">Appointments</a>
+<a onclick="go('svc',this)">Services</a>
+<a onclick="go('rep',this)">Reports<span class="new">New</span></a>
+</nav>
+<main>
+
+<div id="home" class="tab show"><div class="panel">
+<h1>Dashboard</h1><p class="s">Today's overview of your clinic.</p>
+<div class="stats">
+<div class="stat"><b id="a1">0</b><span>Active appointments</span></div>
+<div class="stat"><b id="a2">0</b><span>Confirmed</span></div>
+<div class="stat"><b id="a3">0</b><span>Pending</span></div>
+<div class="stat"><b id="a4">0</b><span>Expected revenue</span></div>
+</div>
+<p class="s" style="margin-top:18px">Start by adding your services, then book your first appointment.</p>
+</div></div>
+
+<div id="appts" class="tab"><div class="panel">
+<h1>Appointments</h1><p class="s">Add an appointment, then confirm or cancel it.</p>
+<div class="form">
+<input id="pn" placeholder="Patient name">
+<select id="ps"></select>
+<input id="pd" type="date">
+<input id="pt" type="time" value="10:00">
+<button class="btn" id="addBtn" onclick="addA()">Add appointment</button>
+</div>
+<p id="hint" class="s" style="display:none">Add at least one active service first (Services tab).</p>
+<div class="wrapx"><table><thead><tr><th>Patient</th><th>Service</th><th>Date</th><th>Time</th><th>Status</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+<p id="em" class="empty">No appointments yet.</p>
+</div></div>
+
+<div id="svc" class="tab"><div class="panel">
+<h1>Services</h1><p class="s">Add the services patients can book. Toggle to show or hide.</p>
+<div class="form"><input id="sn" placeholder="Service name"><input id="sp" type="number" min="1" placeholder="Price"><button class="btn" onclick="addS()">Add service</button></div>
+<div class="grid" id="sg"></div>
+<p id="es" class="empty">No services yet.</p>
+</div></div>
+
+<div id="rep" class="tab"><div class="panel"><h1>Reports</h1><p class="s">Expected revenue per service (excludes cancelled).</p>
+<div class="wrapx"><table><thead><tr><th>Service</th><th>Appointments</th><th>Revenue</th></tr></thead><tbody id="rt"></tbody></table></div>
+<p id="er" class="empty">No data yet.</p></div></div>
+
+</main></div>
+<script>
+// Data is kept in memory only: it resets when the page is closed. A real system needs a database.
+const svc=[], ap=[];
+const $=id=>document.getElementById(id);
+const cl={Confirmed:"ok",Pending:"wait",Cancelled:"no"};
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function draw(){
+ const act=svc.map((s,i)=>({s,i})).filter(x=>x.s.on);
+ $("ps").innerHTML=act.map(x=>`<option value="${x.i}">${esc(x.s.n)}</option>`).join("");
+ $("addBtn").disabled=!act.length; $("hint").style.display=act.length?"none":"block";
+ $("tb").innerHTML=ap.map((a,i)=>`<tr><td>${esc(a.p)}</td><td>${esc(a.s)}</td><td>${a.d||"-"}</td><td>${a.t}</td><td><span class="st ${cl[a.st]}">${a.st}</span></td><td><button class="btn teal" onclick="setS(${i},'Confirmed')">Confirm</button> <button class="btn red" onclick="setS(${i},'Cancelled')">Cancel</button></td></tr>`).join("");
+ $("em").style.display=ap.length?"none":"block";
+ $("sg").innerHTML=svc.map((s,i)=>`<div class="mini"><div class="h"><b>${esc(s.n)}</b><button class="tg ${s.on?'on':''}" aria-label="Toggle service" onclick="tg(${i})"></button></div><div class="n">${s.p}</div><div class="acts"><button class="btn teal" onclick="ed(${i})">Edit price</button><button class="btn red" onclick="del(${i})">Delete</button></div></div>`).join("");
+ $("es").style.display=svc.length?"none":"block";
+ const live=ap.filter(a=>a.st!=="Cancelled");
+ $("a1").textContent=live.length;
+ $("a2").textContent=ap.filter(a=>a.st==="Confirmed").length;
+ $("a3").textContent=ap.filter(a=>a.st==="Pending").length;
+ $("a4").textContent=live.reduce((t,a)=>t+a.price,0);
+ const names=[...new Set(ap.map(a=>a.s))];
+ $("rt").innerHTML=names.map(n=>{const l=live.filter(a=>a.s===n);return `<tr><td>${esc(n)}</td><td>${l.length}</td><td>${l.reduce((t,a)=>t+a.price,0)}</td></tr>`}).join("");
+ $("er").style.display=ap.length?"none":"block";
+}
+function addS(){const n=$("sn").value.trim(),p=+$("sp").value;
+ if(!n||!(p>0)){alert("Enter a service name and a price above zero.");return}
+ svc.push({n,p,on:true});$("sn").value=$("sp").value="";draw()}
+function addA(){const p=$("pn").value.trim(),s=svc[+$("ps").value];
+ if(!p||!s){alert("Enter the patient name and choose a service.");return}
+ ap.push({p,s:s.n,price:s.p,d:$("pd").value,t:$("pt").value,st:"Pending"});$("pn").value="";draw()}
+function setS(i,s){ap[i].st=s;draw()}
+function tg(i){svc[i].on=!svc[i].on;draw()}
+function ed(i){const v=+prompt("New price:",svc[i].p);if(v>0){svc[i].p=v;draw()}}
+function del(i){if(confirm("Delete this service? Existing appointments keep their price.")){svc.splice(i,1);draw()}}
+function go(id,el){document.querySelectorAll(".tab").forEach(t=>t.classList.remove("show"));$(id).classList.add("show");document.querySelectorAll(".side a").forEach(a=>a.classList.remove("on"));el.classList.add("on")}
+draw();
+</script>
+</body>
+</html>
